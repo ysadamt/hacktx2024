@@ -14,6 +14,9 @@ const options: NextAuthOptions = {
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID || "",
       clientSecret: process.env.APPLE_CLIENT_SECRET || "",
+      httpOptions: {
+        timeout: 10000,
+      },
     }),
   ],
   callbacks: {
