@@ -4,6 +4,17 @@ import SpotifyProvider from "next-auth/providers/spotify";
 import AppleProvider from "next-auth/providers/apple";
 
 const options: NextAuthOptions = {
+  cookies: {
+    callbackUrl: {
+      name: `__Secure-next-auth.callback-url`,
+      options: {
+        httpOnly: false,
+        sameSite: "none",
+        path: "/",
+        secure: true,
+      },
+    },
+  },
   providers: [
     SpotifyProvider({
       authorization:
