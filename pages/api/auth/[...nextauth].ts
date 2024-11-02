@@ -5,10 +5,10 @@ import AppleProvider from "next-auth/providers/apple";
 
 const options: NextAuthOptions = {
   cookies: {
-    callbackUrl: {
-      name: `__Secure-next-auth.callback-url`,
+    pkceCodeVerifier: {
+      name: "next-auth.pkce.code_verifier",
       options: {
-        httpOnly: false,
+        httpOnly: true,
         sameSite: "none",
         path: "/",
         secure: true,
