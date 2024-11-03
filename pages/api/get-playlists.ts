@@ -1,5 +1,5 @@
 // pages/api/playlists.ts
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextApiRequest, NextApiResponse } from "next";
 
 interface AppleMusicPlaylist {
   id: string;
@@ -32,24 +32,24 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  if (req.method !== 'GET') {
-    return res.status(405).json({ message: 'Method not allowed' });
+  if (req.method !== "GET") {
+    return res.status(405).json({ message: "Method not allowed" });
   }
 
   try {
-    const developerToken = process.env.APPLE_DEVELOPER_TOKEN;
-    const musicUserToken = req.cookies['music-user-token']; // Get from cookies
+    const developerToken = process.env.APPLE_MUSIC_AUTHORIZATION!;
+    const musicUserToken = process.env.APPLE_MUSIC_MEDIA_USER_TOKEN!;
 
     if (!developerToken || !musicUserToken) {
-      return res.status(401).json({ error: 'Missing required tokens' });
+      return res.status(401).json({ error: "Missing required tokens" });
     }
 
     const response = await fetch(
-      'https://api.music.apple.com/v1/me/library/playlists?limit=25',
+      "https://api.music.apple.com/v1/me/library/playlists?limit=25",
       {
         headers: {
-          'Authorization': `Bearer ${developerToken}`,
-          'Music-User-Token': musicUserToken,
+          Authorization: `Bearer ${developerToken}`,
+          "Music-User-Token": musicUserToken,
         },
       }
     );
@@ -61,7 +61,7 @@ export default async function handler(
     const data: AppleMusicResponse = await response.json();
     res.status(200).json(data);
   } catch (error) {
-    console.error('Error fetching playlists:', error);
-    res.status(500).json({ error: 'Failed to fetch playlists' });
+    console.error("Error fetching playlists:", error);
+    res.status(500).json({ error: "Failed to fetch playlists" });
   }
 }
