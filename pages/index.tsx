@@ -17,6 +17,8 @@ import ForegroundStatic from '@/components/ForegroundStatic';
 import CartridgeCarousel from '@/components/CartridgeCarousel';
 import { EmblaOptionsType } from 'embla-carousel'
 import loadingImg from "@/public/assets/loading.png";
+import { LuSparkles } from "react-icons/lu";
+import Link from 'next/link';
 
 const vt323 = VT323({
   weight: '400',
@@ -164,12 +166,18 @@ export default function Home() {
           </div>
         ))}
       </div> */}
-      <button className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black">
-        <svg width="37" height="40" viewBox="0 0 37 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M12.5 7.29419H30.5V32.706H18.5V20.0001H27.5V13.6471H15.5V32.706H3.5V20.0001H12.5V7.29419ZM12.5 23.1765H6.5V29.5295H12.5V23.1765ZM27.5 23.1765H21.5V29.5295H27.5V23.1765Z" fill="currentColor" />
-        </svg>
-        Convert
-      </button>
+      <div className="flex gap-4">
+        <button className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black">
+          <svg width="37" height="40" viewBox="0 0 37 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12.5 7.29419H30.5V32.706H18.5V20.0001H27.5V13.6471H15.5V32.706H3.5V20.0001H12.5V7.29419ZM12.5 23.1765H6.5V29.5295H12.5V23.1765ZM27.5 23.1765H21.5V29.5295H27.5V23.1765Z" fill="currentColor" />
+          </svg>
+          Convert
+        </button>
+        <Link href="/recommender" className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black">
+          <LuSparkles size={30} />
+          Recommender
+        </Link>
+      </div>
       <ForegroundStatic />
     </div>
   );
