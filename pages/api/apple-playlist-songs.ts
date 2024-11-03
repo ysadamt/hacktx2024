@@ -35,6 +35,7 @@ export default async function handler(
     const data = await response.json();
     
     // Extract ISRCs from the tracks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const trackISRCs = data.data.map((track: any) => ({
       isrc: track.attributes?.isrc || null,
       name: track.attributes?.name || 'Unknown Track',

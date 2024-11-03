@@ -50,6 +50,7 @@ export default function Home() {
       }
       throw new Error("Invalid playlist URL");
     } catch (err) {
+      console.error(err);
       throw new Error("Unable to parse playlist URL");
     }
   };
@@ -79,6 +80,7 @@ export default function Home() {
           },
           body: JSON.stringify({
             name: "Converted from Spotify",
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             tracksISRCs: tracks.map((track: any) => track.isrc),
           }),
         });
@@ -118,6 +120,7 @@ export default function Home() {
           `Playlist created successfully! ${result.trackCount} tracks added`
         );
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setConvertError(err.message || "An error occurred during conversion");
     } finally {
@@ -390,11 +393,10 @@ export default function Home() {
                 <button
                   onClick={handleConvert}
                   disabled={convertLoading || !playlistUrl}
-                  className={`px-4 py-2 border-2 border-[#EE98FF] text-[#EE98FF] hover:bg-[#EE98FF] hover:text-black rounded flex items-center gap-2 ${
-                    convertLoading || !playlistUrl
-                      ? "opacity-50 cursor-not-allowed"
-                      : ""
-                  }`}
+                  className={`px-4 py-2 border-2 border-[#EE98FF] text-[#EE98FF] hover:bg-[#EE98FF] hover:text-black rounded flex items-center gap-2 ${convertLoading || !playlistUrl
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                    }`}
                 >
                   {convertLoading ? (
                     <>
