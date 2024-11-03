@@ -37,6 +37,7 @@ async function refreshAccessToken(token: JWT): Promise<JWT> {
       accessToken: data.access_token,
       expiresAt: Math.floor(Date.now() / 1000 + data.expires_in),
     };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
   } catch (error) {
     return {
       ...token,

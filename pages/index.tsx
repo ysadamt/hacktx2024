@@ -1,6 +1,7 @@
 import { useSession, signIn, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import type { SpotifyPlaylist } from '../types/spotify';
+import { getMusicUserToken } from '@/utils/appleMusicAuth';
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -15,8 +16,22 @@ export default function Home() {
         throw new Error('Failed to fetch playlist details');
       }
 
-      const data = await response.json();
-      console.log(data);
+      const trackISRCs = await response.json();
+      console.log(trackISRCs);
+
+      const userToken = await getMusicUserToken(session!.accessToken!);
+      console.log(userToken);
+
+      // const response3 = await fetch(`/api/new-apple-playlist`,
+      //   {
+      //     method: "POST",
+      //     headers: {
+      //       Authorization: `Bearer ${session!.accessToken}`,
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify(trackISRCs),
+      //   }
+      // );
     } catch (err) {
       console.error(err);
     }

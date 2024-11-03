@@ -2,10 +2,7 @@ import axios from "axios";
 
 const SPOTIFY_API_BASE = "https://api.spotify.com/v1";
 
-export async function spotifyApi(
-  endpoint: string,
-  accessToken: string,
-) {
+export async function spotifyApi(endpoint: string, accessToken: string) {
   try {
     const response = await axios({
       url: `${SPOTIFY_API_BASE}${endpoint}`,
@@ -49,16 +46,13 @@ export async function getTracksDetails(
     const ids = batch.join(",");
     const response = await spotifyApi(`/tracks?ids=${ids}`, accessToken);
 
-    const details = response.tracks.map((track: any) => ({
-      id: track.id,
-      name: track.name,
-      isrc: track.external_ids?.isrc || "",
-      artists: track.artists.map((artist: any) => artist.name),
-      album: track.album.name,
-    }));
+    const details = response.tracks.map(
+      (track: any) => track.external_ids?.isrc || ""
+    );
 
     allDetails.push(...details);
   }
 
+  console.log(allDetails);
   return allDetails;
 }

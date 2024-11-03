@@ -1,14 +1,10 @@
 import { getSession } from "next-auth/react";
-import {
-  spotifyApi,
-  getPlaylistId,
-  getTracksDetails,
-} from "../../utils/spotify";
+import { spotifyApi, getTracksDetails } from "../../utils/spotify";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse<{ tracks: any[] } | { error: string }>
+  res: NextApiResponse<{ tracks: string[] } | { error: string }>
 ) {
   try {
     const session = await getSession({ req });
@@ -36,6 +32,7 @@ export default async function handler(
     );
 
     res.json({ tracks: tracksWithDetails });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
   } catch (error: any) {
     res.status(error.response?.status || 500).json({
       error: error.response?.data?.error || error.message,
