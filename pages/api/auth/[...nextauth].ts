@@ -3,13 +3,6 @@ import SpotifyProvider from "next-auth/providers/spotify";
 import AppleProvider from "next-auth/providers/apple";
 import { JWT } from "next-auth/jwt";
 
-const scopes = [
-  "playlist-read-private",
-  "playlist-read-collaborative",
-  "user-read-email",
-  "user-read-private",
-].join(" ");
-
 async function refreshAccessToken(token: JWT): Promise<JWT> {
   try {
     const response = await fetch("https://accounts.spotify.com/api/token", {
