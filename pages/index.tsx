@@ -1,8 +1,8 @@
-import { useSession, signIn, signOut } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import type { SpotifyPlaylist } from '../types/spotify';
-import { getMusicUserToken } from '@/utils/appleMusicAuth';
-import Image from 'next/image';
+import { useSession, signIn, signOut } from "next-auth/react";
+import { useEffect, useState } from "react";
+import type { SpotifyPlaylist } from "../types/spotify";
+import { getMusicUserToken } from "@/utils/appleMusicAuth";
+import Image from "next/image";
 import logo from "@/public/assets/logo.png";
 import playIcon from "@/public/assets/play-icon.svg";
 import topLeft from "@/public/assets/top-left.svg";
@@ -11,12 +11,12 @@ import gridBg from "@/public/assets/grid-bg.png";
 import sparkle from "@/public/assets/sparkle.svg";
 import lines from "@/public/assets/lines.svg";
 import jpWords from "@/public/assets/jp-words.svg";
-import { VT323 } from 'next/font/google';
-import ForegroundStatic from '@/components/ForegroundStatic';
+import { VT323 } from "next/font/google";
+import ForegroundStatic from "@/components/ForegroundStatic";
 
 const vt323 = VT323({
-  weight: '400',
-  subsets: ['latin'],
+  weight: "400",
+  subsets: ["latin"],
 });
 
 export default function Home() {
@@ -24,32 +24,70 @@ export default function Home() {
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [convertingPlaylistId, setConvertingPlaylistId] = useState<
+    string | null
+  >(null);
+  const [conversionSuccess, setConversionSuccess] = useState<string | null>(
+    null
+  );
 
-  async function fetchPlaylistDetails(playlistId: string) {
+  async function fetchPlaylistDetails(playlist: SpotifyPlaylist) {
     try {
-      const response = await fetch(`/api/spotify-playlist-songs?playlistId=${playlistId}`);
+      setConvertingPlaylistId(playlist.id);
+      setError(null);
+      setConversionSuccess(null);
+
+      // 1. Get tracks from Spotify playlist
+      const response = await fetch(
+        `/api/spotify-playlist-songs?playlistId=${playlist.id}`
+      );
       if (!response.ok) {
-        throw new Error('Failed to fetch playlist details');
+        throw new Error("Failed to fetch playlist details");
+      }
+      const { tracks: trackISRCs } = await response.json();
+
+      // 2. Get Apple Music authentication
+      const devToken = process.env.NEXT_PUBLIC_APPLE_MUSIC_DEV_TOKEN;
+      if (!devToken) {
+        throw new Error("Apple Music developer token not configured");
       }
 
-      const trackISRCs = await response.json();
-      console.log(trackISRCs);
+      const musicUserToken = await getMusicUserToken(devToken);
+      if (!musicUserToken) {
+        throw new Error(
+          "Failed to get Apple Music authorization. Please make sure you're signed in to Apple Music."
+        );
+      }
 
-      const userToken = await getMusicUserToken(session!.accessToken!);
-      console.log(userToken);
+      // 3. Create Apple Music playlist
+      const createPlaylistResponse = await fetch("/api/new-apple-playlist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Music-User-Token": musicUserToken,
+        },
+        body: JSON.stringify({
+          name: `${playlist.name} (from Spotify)`,
+          description: playlist.description || "Playlist imported from Spotify",
+          tracksISRCs: trackISRCs.filter(Boolean),
+        }),
+      });
 
-      // const response3 = await fetch(`/api/new-apple-playlist`,
-      //   {
-      //     method: "POST",
-      //     headers: {
-      //       Authorization: `Bearer ${session!.accessToken}`,
-      //       "Content-Type": "application/json",
-      //     },
-      //     body: JSON.stringify(trackISRCs),
-      //   }
-      // );
+      if (!createPlaylistResponse.ok) {
+        throw new Error("Failed to create Apple Music playlist");
+      }
+
+      const result = await createPlaylistResponse.json();
+      setConversionSuccess(
+        `Successfully created "${playlist.name}" in Apple Music!`
+      );
     } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "An unknown error occurred"
+      );
       console.error(err);
+    } finally {
+      setConvertingPlaylistId(null);
     }
   }
 
@@ -58,20 +96,23 @@ export default function Home() {
       if (session?.accessToken) {
         try {
           setLoading(true);
-          const response = await fetch('https://api.spotify.com/v1/me/playlists', {
-            headers: {
-              Authorization: `Bearer ${session.accessToken}`,
-            },
-          });
+          const response = await fetch(
+            "https://api.spotify.com/v1/me/playlists",
+            {
+              headers: {
+                Authorization: `Bearer ${session.accessToken}`,
+              },
+            }
+          );
 
           if (!response.ok) {
-            throw new Error('Failed to fetch playlists');
+            throw new Error("Failed to fetch playlists");
           }
 
           const data = await response.json();
           setPlaylists(data.items);
         } catch (err) {
-          setError(err instanceof Error ? err.message : 'An error occurred');
+          setError(err instanceof Error ? err.message : "An error occurred");
         } finally {
           setLoading(false);
         }
@@ -81,27 +122,56 @@ export default function Home() {
     fetchPlaylists();
   }, [session]);
 
-  if (status === 'loading') {
+  if (status === "loading") {
     return <div>Loading authentication status...</div>;
   }
 
   if (!session) {
     return (
-      <div className={`${vt323.className} p-4 flex flex-col items-center justify-center min-h-dvh gap-8 text-white relative`}>
-        <Image src={gridBg} alt="Grid" className="absolute bottom-0 left-0 w-full" />
+      <div
+        className={`${vt323.className} p-4 flex flex-col items-center justify-center min-h-dvh gap-8 text-white relative`}
+      >
+        <Image
+          src={gridBg}
+          alt="Grid"
+          className="absolute bottom-0 left-0 w-full"
+        />
         <div className="absolute bg-random-dots bg-repeat top-0 right-0 w-full h-full" />
-        <Image src={sparkle} alt="Sparkle" className="absolute top-[5%] left-[5%] w-[6%] sm:w-[3%]" />
-        <Image src={sparkle} alt="Sparkle" className="absolute bottom-[5%] right-[5%] w-[6%] sm:w-[3%]" />
-        <Image src={lines} alt="Lines" className="absolute top-[6%] right-[5%] w-[15%] sm:w-[10%]" />
-        <Image src={jpWords} alt="JP Words" className="absolute top-[12%] sm:top-[18%] right-[5%] w-[16%] sm:w-[7%]" />
+        <Image
+          src={sparkle}
+          alt="Sparkle"
+          className="absolute top-[5%] left-[5%] w-[6%] sm:w-[3%]"
+        />
+        <Image
+          src={sparkle}
+          alt="Sparkle"
+          className="absolute bottom-[5%] right-[5%] w-[6%] sm:w-[3%]"
+        />
+        <Image
+          src={lines}
+          alt="Lines"
+          className="absolute top-[6%] right-[5%] w-[15%] sm:w-[10%]"
+        />
+        <Image
+          src={jpWords}
+          alt="JP Words"
+          className="absolute top-[12%] sm:top-[18%] right-[5%] w-[16%] sm:w-[7%]"
+        />
         <div className="relative w-[95%] sm:w-[60%]">
           <Image src={logo} alt="Bridge" className="w-full" />
-          <Image src={topLeft} alt="top left" className="absolute top-0 left-0 w-[14%]" />
-          <Image src={bottomRight} alt="bottom right" className="absolute bottom-0 right-0 w-[14%]" />
+          <Image
+            src={topLeft}
+            alt="top left"
+            className="absolute top-0 left-0 w-[14%]"
+          />
+          <Image
+            src={bottomRight}
+            alt="bottom right"
+            className="absolute bottom-0 right-0 w-[14%]"
+          />
         </div>
         <div className="flex gap-4 z-[9999]">
-          <Image src={playIcon
-          } alt="Play" className="w-8" />
+          <Image src={playIcon} alt="Play" className="w-8" />
           <button
             onClick={() => signIn()}
             className="text-2xl px-6 py-2 border-2 border-white hover:bg-white hover:text-black"
@@ -109,7 +179,9 @@ export default function Home() {
             Sign in
           </button>
         </div>
-        <p className="absolute bottom-8 text-lg">© 2024 DEVLOG Design, inc. ALL RIGHTS RESERVED</p>
+        <p className="absolute bottom-8 text-lg">
+          © 2024 DEVLOG Design, inc. ALL RIGHTS RESERVED
+        </p>
         <ForegroundStatic />
       </div>
     );
@@ -135,7 +207,7 @@ export default function Home() {
           <div
             key={playlist.id}
             className="border p-4 rounded shadow hover:shadow-md transition-shadow"
-            onClick={() => fetchPlaylistDetails(playlist.id)}
+            onClick={() => fetchPlaylistDetails(playlist)}
           >
             {playlist.images[0] && (
               <img
