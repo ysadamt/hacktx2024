@@ -14,10 +14,11 @@ export default async function handler(req, res) {
                 "Generate 25 songs that match the vibe/characteristic of the following words. When returning these songs, you should return the song name and who's it's by and parse it so every song/artist is in a tuple and the entire thing is in a list. Do not label each row with a number. You are only suppose to take phrases or single words and you should state \"Please enter reasonable characteristics/action verbs\" when prompted with absurb or inappropriate words. The keywords you will build the songs off of are: " + req.body.ask }],
         });
         const llmOutput = completion.choices[0].message.content;
-        const cleanedString = llmOutput.replace(/[\[\]\n\s]/g, '').trim();
+        console.log(llmOutput);
+        const cleanedString = llmOutput.replace(/[\[\]\n]/g, '').trim();
         const tuples = cleanedString.split('),');
         const result = tuples.map(pair => { const [song, artist] = pair.replace(/[()"]/g, '').split(',');
-          return [song.trim(), artist.trim()];
+          return [song.trim().replaceAll(" ", ""), artist.trim()];
         });
         console.log(result);
         return result; // returns arr of tuples where tuple[0] = song, tuple[1] = artist

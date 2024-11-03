@@ -27,16 +27,18 @@ const getToken = async () => {
 
   const data = await response.json();
 
-  // Check if the access token was retrieved successfully
+  // check if the access token was retrieved
   if (data.access_token) {
     console.log("Access token retrieved successfully:", data.access_token);
     return data.access_token;
   } else {
     console.error("Failed to retrieve access token:", data);
-    return null; // Return null if the token retrieval failed
+    return null; // if token retrieval failed
   }
 };
 
+// gets userID
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getUserID = async (accessToken) => {
   const response = await fetch(`https://api.spotify.com/v1/me`, {
     method: "GET",
@@ -49,7 +51,6 @@ const getUserID = async (accessToken) => {
     const data = await response.json();
     return data.id;
   } else {
-    // Log error details
     const errorData = await response.json();
     console.error(
       "Failed to fetch user ID:",
@@ -60,22 +61,13 @@ const getUserID = async (accessToken) => {
   }
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getPlaylists = async (accessToken) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const response = await fetch(`https://api.spotify.com/v1/playlists`, {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-};
-
-// function for playlist song isrc, returns arr of isrcs
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getPlaylistISRC = async (accessToken, playlistId) => {
+// gets ISRC of a song
+const getSongISRC = async (accessToken, songName, artistName) => {
+  const formattedArtistName = artistName.split(" ").join("%2520");
   const response = await fetch(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+    `https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track&limit=1`,
     {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -84,24 +76,98 @@ const getPlaylistISRC = async (accessToken, playlistId) => {
 
   if (response.ok) {
     const data = await response.json();
-    const arr = []; // Initialize an empty array
-
-    data.items.forEach((item) => {
-      if (
-        item.track &&
-        item.track.external_ids &&
-        item.track.external_ids.isrc
-      ) {
-        arr.push(item.track.external_ids.isrc); // push only isrc value
-      }
-    });
-
-    return arr;
+    return data.tracks.items[0].external_ids.isrc; // returns isrc
   } else {
+    const errorData = await response.json();
     console.error(
-      "Failed to fetch playlist:",
+      "Failed to fetch song IRSC :",
       response.status,
-      response.statusText
+      response.statusText,
+      errorData
+    );
+  }
+};
+
+// gets playlist using playlistID
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const getPlaylist = async (accessToken, playlistID) => {
+  const response = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistID}`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (response.ok) {
+    const data = await response.json();
+    return data.id;
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to fetch user ID:",
+      response.status,
+      response.statusText,
+      errorData
+    );
+  }
+};
+
+// creates playlist
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const createPlaylist = async (accessToken, userID, playlistName, tracksIds) => {
+  const response = await fetch(
+    `https://api.spotify.com/v1/users/${userID}/playlists&name=${playlistName}`,
+    {
+      // not to sure ab playlist name
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (response.ok) {
+    const data = await response.json();
+    addTracksToPlaylist(accessToken, data.id, tracksIds);
+    return data.id;
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to create playlist:",
+      response.status,
+      response.statusText,
+      errorData
+    );
+  }
+};
+
+// adds tracks to playlist, create playlist helper function
+const addTracksToPlaylist = async (accessToken, playlistID, tracksIds) => {
+  const response = await fetch(
+    `https://api.spotify.com/v1/playlists/${playlistID}/tracks?uris=${tracksIds.join(
+      ","
+    )}`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (response.ok) {
+    console.log("Tracks added to playlist successfully");
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to add tracks to playlist:",
+      response.status,
+      response.statusText,
+      errorData
     );
   }
 };
@@ -115,6 +181,7 @@ const getRecommendations = async (accessToken, tracksIds) => {
       ","
     )}`,
     {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -138,10 +205,12 @@ const getRecommendations = async (accessToken, tracksIds) => {
 getToken()
   .then((accessToken) => {
     if (accessToken) {
-      console.log(getUserID(accessToken));
+      // returns isrc
+      getSongISRC(accessToken, "Faith", "STXRZ").then((isrc) => {
+        console.log(isrc);
+      });
 
-      //console.log(getPlaylistIRSC(accessToken, '4Lw3GV7Q3hvfFYFwAaBNWy'));
-
+      // used for blend
       // getRecommendations(accessToken, ['4EG10OLde2d8EisbYoKTuZ','05zDB03E1WxCLyraJJ2I2r','0lPfqcI3A8gQ9971nXxgq6','3hRqmUI4Mzh5h0drGk24AF','7ovUcF5uHTBRzUpB6ZOmvt']);
     } else {
       console.error("No access token. Exiting...");
