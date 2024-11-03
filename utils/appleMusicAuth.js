@@ -14,7 +14,7 @@ export async function configure(token) {
   })
     .then((response) => response.json())
     .then((res) => {
-      console.log(res.token);
+    //   console.log(res.token);
       instance.configure({
         developerToken: res.token,
         app: {

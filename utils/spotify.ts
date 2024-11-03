@@ -53,6 +53,32 @@ export async function getTracksDetails(
     allDetails.push(...details);
   }
 
-  console.log(allDetails);
+  // console.log(allDetails);
   return allDetails;
 }
+
+export const getSongISRC = async (accessToken: string, songName: string, artistName: string) => {
+  const formattedArtistName = artistName.split(" ").join("%2520");
+  const response = await fetch(
+    `https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track&limit=1`,
+    {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  );
+
+  if (response.ok) {
+    const data = await response.json();
+    return data.tracks.items[0].external_ids.isrc; // returns isrc
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to fetch song IRSC :",
+      response.status,
+      response.statusText,
+      errorData
+    );
+  }
+};

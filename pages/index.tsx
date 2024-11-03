@@ -20,7 +20,6 @@ import loadingImg from "@/public/assets/loading.png";
 import { LuSparkles } from "react-icons/lu";
 import Link from "next/link";
 import SongsComponent from "@/components/SongsComponent";
-import { useAppleMusicPlaylists } from "@/hooks/useAppleMusicPlaylists";
 
 const vt323 = VT323({
   weight: "400",
@@ -31,7 +30,6 @@ const OPTIONS: EmblaOptionsType = { loop: true };
 
 export default function Home() {
   const { data: session, status } = useSession();
-  const { playlists: appleMusicPlaylists } = useAppleMusicPlaylists();
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +38,7 @@ export default function Home() {
   const [convertLoading, setConvertLoading] = useState(false);
   const [convertError, setConvertError] = useState("");
   const [convertSuccess, setConvertSuccess] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [convertedPlaylistLink, setConvertedPlaylistLink] = useState<null | string>(null);
 
   const parsePlaylistUrl = (url: string) => {
     try {
@@ -57,6 +55,31 @@ export default function Home() {
       throw new Error("Unable to parse playlist URL");
     }
   };
+
+  const convertToApple = async (playlistName: string, playlistId: string) => {
+    try {
+      if (session?.accessToken) {
+        const response = await fetch(`/api/spotify-playlist-songs?playlistId=${playlistId}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch playlist details');
+        }
+
+        const trackISRCs = await response.json();
+
+        const response2 = await fetch(`api/convert-to-apple?playlistName=${playlistName}&isrcArr=${JSON.stringify(trackISRCs.tracks)}`);
+
+        if (!response2.ok) {
+          throw new Error('Failed to convert playlist');
+        }
+
+        const data = await response2.json();
+        console.log(data.playlistUrl.split("/playlists/")[1]);
+        setConvertedPlaylistLink(data.playlistUrl);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
 
   const handleConvert = async () => {
     try {
@@ -133,38 +156,6 @@ export default function Home() {
   const [currentPlaylist, setCurrentPlaylist] = useState<number>(0);
 
   useEffect(() => {
-    console.log(appleMusicPlaylists);
-  }, [appleMusicPlaylists]);
-
-  // async function fetchPlaylistDetails(playlistId: string) {
-  //   try {
-  //     const response = await fetch(`/api/spotify-playlist-songs?playlistId=${playlistId}`);
-  //     if (!response.ok) {
-  //       throw new Error('Failed to fetch playlist details');
-  //     }
-
-  //     const trackISRCs = await response.json();
-  //     console.log(trackISRCs);
-
-  //     const userToken = await getMusicUserToken(session!.accessToken!);
-  //     console.log(userToken);
-
-  //     const response3 = await fetch(`/api/new-apple-playlist`,
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           Authorization: `Bearer ${session!.accessToken}`,
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(trackISRCs),
-  //       }
-  //     );
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // }
-
-  useEffect(() => {
     const fetchPlaylists = async () => {
       if (session?.accessToken) {
         try {
@@ -194,10 +185,6 @@ export default function Home() {
 
     fetchPlaylists();
   }, [session]);
-
-  useEffect(() => {
-    console.log(appleMusicPlaylists);
-  }, [appleMusicPlaylists]);
 
   if (status === "loading") {
     return <div>Loading authentication status...</div>;
@@ -295,12 +282,49 @@ export default function Home() {
         )}
       </div>
 
-      <div>
+      <div className="flex gap-4">
+        <button
+          onClick={() => convertToApple(playlists[currentPlaylist].name, playlists[currentPlaylist].id)}
+          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] mt-16 hover:bg-[#EE98FF] hover:text-black"
+        >
+          <svg
+            width="37"
+            height="40"
+            viewBox="0 0 37 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.5 7.29419H30.5V32.706H18.5V20.0001H27.5V13.6471H15.5V32.706H3.5V20.0001H12.5V7.29419ZM12.5 23.1765H6.5V29.5295H12.5V23.1765ZM27.5 23.1765H21.5V29.5295H27.5V23.1765Z"
+              fill="currentColor"
+            />
+          </svg>
+          Convert
+        </button>
+        <Link
+          href="/recommender"
+          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] mt-16 hover:bg-[#EE98FF] hover:text-black"
+        >
+          <LuSparkles size={30} />
+          Recommender
+        </Link>
+      </div>
 
+      <div className="mt-4 mb-8">
+        {convertedPlaylistLink && (
+          <a
+            href={`https://music.apple.com/us/library/playlist/${convertedPlaylistLink.split("/playlists/")[1]}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#EE98FF] text-2xl hover:underline"
+          >
+            View converted playlist
+          </a>
+        )}
       </div>
 
       {playlists.length !== 0 && (
-        <div className="flex flex-col w-full items-center pt-16 gap-4">
+        <div className="flex flex-col w-full items-center gap-4">
           <h3 className="text-5xl w-3/4 text-center">Tracks</h3>
           <SongsComponent playlistHref={playlists[currentPlaylist].href} />
         </div>
@@ -327,33 +351,6 @@ export default function Home() {
           </div>
         ))}
       </div> */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black"
-        >
-          <svg
-            width="37"
-            height="40"
-            viewBox="0 0 37 40"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M12.5 7.29419H30.5V32.706H18.5V20.0001H27.5V13.6471H15.5V32.706H3.5V20.0001H12.5V7.29419ZM12.5 23.1765H6.5V29.5295H12.5V23.1765ZM27.5 23.1765H21.5V29.5295H27.5V23.1765Z"
-              fill="currentColor"
-            />
-          </svg>
-          Convert
-        </button>
-        <Link
-          href="/recommender"
-          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black"
-        >
-          <LuSparkles size={30} />
-          Recommender
-        </Link>
-      </div>
 
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">

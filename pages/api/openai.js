@@ -20,8 +20,7 @@ export default async function handler(req, res) {
         const result = tuples.map(pair => { const [song, artist] = pair.replace(/[()"]/g, '').split(',');
           return [song.trim().replaceAll(" ", ""), artist.trim()];
         });
-        console.log(result);
-        return result; // returns arr of tuples where tuple[0] = song, tuple[1] = artist
+        res.status(200).json({ result });
     } else {
         res.status(405).end(); // error handling
     }

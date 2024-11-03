@@ -61,33 +61,6 @@ const getUserID = async (accessToken) => {
   }
 };
 
-// gets ISRC of a song
-const getSongISRC = async (accessToken, songName, artistName) => {
-  const formattedArtistName = artistName.split(" ").join("%2520");
-  const response = await fetch(
-    `https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track&limit=1`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  if (response.ok) {
-    const data = await response.json();
-    return data.tracks.items[0].external_ids.isrc; // returns isrc
-  } else {
-    const errorData = await response.json();
-    console.error(
-      "Failed to fetch song IRSC :",
-      response.status,
-      response.statusText,
-      errorData
-    );
-  }
-};
-
 // gets playlist using playlistID
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPlaylist = async (accessToken, playlistID) => {
