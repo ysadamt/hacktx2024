@@ -8,6 +8,20 @@ export default function Home() {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function fetchPlaylistDetails(playlistId: string) {
+    try {
+      const response = await fetch(`/api/spotify-playlist-songs?playlistId=${playlistId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch playlist details');
+      }
+
+      const data = await response.json();
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   useEffect(() => {
     const fetchPlaylists = async () => {
       if (session?.accessToken) {
@@ -73,6 +87,7 @@ export default function Home() {
           <div
             key={playlist.id}
             className="border p-4 rounded shadow hover:shadow-md transition-shadow"
+            onClick={() => fetchPlaylistDetails(playlist.id)}
           >
             {playlist.images[0] && (
               <img
