@@ -9,7 +9,6 @@ import topLeft from "@/public/assets/top-left.svg";
 import bottomRight from "@/public/assets/bottom-right.svg";
 import gridBg from "@/public/assets/grid-bg.png";
 import sparkle from "@/public/assets/sparkle.svg";
-import randoDots from "@/public/assets/rando-dots.svg";
 import lines from "@/public/assets/lines.svg";
 import jpWords from "@/public/assets/jp-words.svg";
 import { VT323 } from 'next/font/google';
