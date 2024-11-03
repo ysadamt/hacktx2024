@@ -51,6 +51,9 @@ export const authOptions: AuthOptions = {
       },
     },
   },
+  pages: {
+    signIn: "/auth/signin",
+  },
   providers: [
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT as string,
