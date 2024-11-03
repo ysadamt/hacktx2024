@@ -11,6 +11,7 @@
   "dependencies": {
     "axios": "^1.7.7",
     "dotenv": "^16.4.5",
+    "embla-carousel": "^8.3.1",
     "embla-carousel-react": "^8.3.1",
     "jsonwebtoken": "^9.0.2",
     "next": "14.2.16",

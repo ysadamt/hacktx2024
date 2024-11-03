@@ -32,6 +32,97 @@ export default function Home() {
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [playlistUrl, setPlaylistUrl] = useState("");
+  const [convertLoading, setConvertLoading] = useState(false);
+  const [convertError, setConvertError] = useState("");
+  const [convertSuccess, setConvertSuccess] = useState("");
+
+  const parsePlaylistUrl = (url: string) => {
+    try {
+      if (url.includes("spotify.com")) {
+        const playlistId = url.split("playlist/")[1]?.split("?")[0];
+        return { service: "spotify", id: playlistId };
+      } else if (url.includes("music.apple.com")) {
+        const playlistId = url.split("playlist/")[1]?.split("?")[0];
+        return { service: "apple", id: playlistId };
+      }
+      throw new Error("Invalid playlist URL");
+    } catch (err) {
+      throw new Error("Unable to parse playlist URL");
+    }
+  };
+
+  const handleConvert = async () => {
+    try {
+      setConvertLoading(true);
+      setConvertError("");
+      setConvertSuccess("");
+
+      const { service, id } = parsePlaylistUrl(playlistUrl);
+
+      if (service === "spotify") {
+        // Get Spotify playlist tracks
+        const tracksResponse = await fetch(
+          `/api/spotify-playlist-songs?playlistId=${id}`
+        );
+        if (!tracksResponse.ok)
+          throw new Error("Failed to fetch Spotify tracks");
+        const { tracks } = await tracksResponse.json();
+
+        // Create Apple Music playlist
+        const createResponse = await fetch("/api/new-apple-playlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            name: "Converted from Spotify",
+            tracksISRCs: tracks.map((track: any) => track.isrc),
+          }),
+        });
+
+        if (!createResponse.ok)
+          throw new Error("Spotify -> Apple Music failed");
+        const result = await createResponse.json();
+        setConvertSuccess(
+          `Playlist created successfully! ID: ${result.playlistId}`
+        );
+      } else if (service === "apple") {
+        // Get Apple Music playlist tracks
+        const tracksResponse = await fetch(
+          `/api/apple-playlist-songs?playlistId=${id}`
+        );
+        if (!tracksResponse.ok)
+          throw new Error("Failed to fetch Apple Music tracks");
+        const { tracks } = await tracksResponse.json();
+
+        // Create Spotify playlist
+        const createResponse = await fetch("/api/new-spotify-playlist", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session?.accessToken}`,
+          },
+          body: JSON.stringify({
+            name: "Converted from Apple Music",
+            tracks: tracks,
+          }),
+        });
+
+        if (!createResponse.ok)
+          throw new Error("Apple Music -> Spotify failed");
+        const result = await createResponse.json();
+        setConvertSuccess(
+          `Playlist created successfully! ${result.trackCount} tracks added`
+        );
+      }
+    } catch (err: any) {
+      setConvertError(err.message || "An error occurred during conversion");
+    } finally {
+      setConvertLoading(false);
+    }
+  };
 
   // async function fetchPlaylistDetails(playlistId: string) {
   //   try {
@@ -205,7 +296,10 @@ export default function Home() {
         ))}
       </div> */}
       <div className="flex gap-4">
-        <button className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black">
+        <button
+          onClick={() => setIsModalOpen(true)}
+          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black"
+        >
           <svg
             width="37"
             height="40"
@@ -228,6 +322,92 @@ export default function Home() {
           Recommender
         </Link>
       </div>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-[#242135] p-6 rounded-lg border-2 border-[#EE98FF] max-w-lg w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-2xl text-white">Convert Playlist</h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-white hover:text-[#EE98FF]"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-lg mb-2 text-white">
+                  Paste playlist URL:
+                </label>
+                <input
+                  type="text"
+                  value={playlistUrl}
+                  onChange={(e) => setPlaylistUrl(e.target.value)}
+                  placeholder="https://open.spotify.com/playlist/... or https://music.apple.com/playlist/..."
+                  className="w-full p-2 bg-transparent border-2 border-[#EE98FF] text-white rounded"
+                />
+              </div>
+
+              {convertError && (
+                <div className="p-3 bg-red-500 bg-opacity-20 border border-red-500 text-red-500 rounded">
+                  {convertError}
+                </div>
+              )}
+
+              {convertSuccess && (
+                <div className="p-3 bg-green-500 bg-opacity-20 border border-green-500 text-green-500 rounded">
+                  {convertSuccess}
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-2">
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-4 py-2 border-2 border-white text-white hover:bg-white hover:text-black rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConvert}
+                  disabled={convertLoading || !playlistUrl}
+                  className={`px-4 py-2 border-2 border-[#EE98FF] text-[#EE98FF] hover:bg-[#EE98FF] hover:text-black rounded flex items-center gap-2 ${
+                    convertLoading || !playlistUrl
+                      ? "opacity-50 cursor-not-allowed"
+                      : ""
+                  }`}
+                >
+                  {convertLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Converting...
+                    </>
+                  ) : (
+                    "Convert"
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <ForegroundStatic />
     </div>
   );
