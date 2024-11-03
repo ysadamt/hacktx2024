@@ -27,13 +27,13 @@ const getToken = async () => {
 
   const data = await response.json();
 
-  // Check if the access token was retrieved successfully
+  // check if the access token was retrieved
   if (data.access_token) {
     console.log("Access token retrieved successfully:", data.access_token);
     return data.access_token;
   } else {
     console.error("Failed to retrieve access token:", data);
-    return null; // Return null if the token retrieval failed
+    return null; // if token retrieval failed
   }
 };
 
@@ -49,7 +49,6 @@ const getUserID = async (accessToken) => {
     const data = await response.json();
     return data.id;
   } else {
-    // Log error details
     const errorData = await response.json();
     console.error(
       "Failed to fetch user ID:",
@@ -59,6 +58,32 @@ const getUserID = async (accessToken) => {
     );
   }
 };
+// https://api.spotify.com/v1/search?q=remaster%2520track%3ABlackCatcher%2520artist%3AVK%2520Blanka&type=track
+const getSongIRCS = async (accessToken, songName, artistName) => {
+  const formattedArtistName = artistName.split(' ').join('%2520');
+  const response = await fetch(`https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track&limit=1`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+  // console.log(`https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track`);
+  // console.log(response);
+
+  if (response.ok) {
+    const data = await response.json();
+    // console.log(data.tracks.items[0].external_ids.isrc);
+    return data.tracks.items[0].external_ids.isrc; // returns isrc
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to fetch song IRSC :",
+      response.status,
+      response.statusText,
+      errorData
+    );
+  }
+}
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getPlaylists = async (accessToken) => {
@@ -68,42 +93,6 @@ const getPlaylists = async (accessToken) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-};
-
-// function for playlist song isrc, returns arr of isrcs
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getPlaylistISRC = async (accessToken, playlistId) => {
-  const response = await fetch(
-    `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-    {
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  );
-
-  if (response.ok) {
-    const data = await response.json();
-    const arr = []; // Initialize an empty array
-
-    data.items.forEach((item) => {
-      if (
-        item.track &&
-        item.track.external_ids &&
-        item.track.external_ids.isrc
-      ) {
-        arr.push(item.track.external_ids.isrc); // push only isrc value
-      }
-    });
-
-    return arr;
-  } else {
-    console.error(
-      "Failed to fetch playlist:",
-      response.status,
-      response.statusText
-    );
-  }
 };
 
 // makes song recommendations based on given tracks
@@ -138,10 +127,12 @@ const getRecommendations = async (accessToken, tracksIds) => {
 getToken()
   .then((accessToken) => {
     if (accessToken) {
-      console.log(getUserID(accessToken));
-
-      //console.log(getPlaylistIRSC(accessToken, '4Lw3GV7Q3hvfFYFwAaBNWy'));
-
+      // returns isrc
+      getSongIRCS(accessToken, 'Faith', 'STXRZ').then((isrc) => {
+        console.log(isrc);
+      });
+      
+      // used for blend
       // getRecommendations(accessToken, ['4EG10OLde2d8EisbYoKTuZ','05zDB03E1WxCLyraJJ2I2r','0lPfqcI3A8gQ9971nXxgq6','3hRqmUI4Mzh5h0drGk24AF','7ovUcF5uHTBRzUpB6ZOmvt']);
     } else {
       console.error("No access token. Exiting...");
