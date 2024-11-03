@@ -62,9 +62,8 @@ export const authOptions: AuthOptions = {
     SpotifyProvider({
       clientId: process.env.SPOTIFY_CLIENT as string,
       clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
-      authorization: {
-        params: { scope: scopes },
-      },
+      authorization:
+        "https://accounts.spotify.com/authorize?scope=user-read-email,playlist-read-private,playlist-modify-private,playlist-modify-public",
     }),
     AppleProvider({
       clientId: process.env.APPLE_CLIENT_ID as string,
@@ -103,4 +102,3 @@ export const authOptions: AuthOptions = {
 };
 
 export default NextAuth(authOptions);
-
