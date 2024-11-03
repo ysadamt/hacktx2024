@@ -9,18 +9,20 @@ const openai = new OpenAI({
 // API route to handle requests
 export default async function handler(req, res) { 
     if (req.method === 'POST') {
-        console.log("here", req.body)
-
+        console.log('running');
         const completion = await openai.chat.completions.create({
-            model: "gpt-3.5-turbo", // Use your preferred model
-            messages: [{ role: "user", content: req.body.ask }], // Pass the prompt content
-            max_tokens: 100,
+            model: "gpt-4o-mini", // model
+            messages: [{ role: "user", content: // prompt + user input
+                "Generate 25 songs that match the vibe/characteristic of the following words. When returning these songs, you should return the song name and who's it's by and parse it so every song/artist is in a tuple and the entire thing is in a list. Do not label each row with a number. You are only suppose to take phrases or single words and you should state \"Please enter reasonable characteristics/action verbs\" when prompted with absurb or inappropriate words. The keywords you will build the songs off of are: " + req.body.ask }],
         });
-
-        console.log(completion.choices[0])
-
-        // res.status(200).json({ result: completion.data.choices[0].message.content });
-       
+        const llmOutput = completion.choices[0].message.content;
+        const cleanedString = llmOutput.replace(/[\[\]\n\s]/g, '').trim();
+        const tuples = cleanedString.split('),');
+        const result = tuples.map(pair => { const [song, artist] = pair.replace(/[()"]/g, '').split(',');
+          return [song.trim(), artist.trim()];
+        });
+        console.log(result);
+        return result;
     } else {
         res.status(405).end(); // Method Not Allowed
     }

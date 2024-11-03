@@ -7,14 +7,8 @@ const ExampleComponent = () => {
     const [result, setResult] = useState('');
 
     const handleFetch = async () => {
-        // try {
-        //     const data = await fetchOpenAI('say penis 10 times lmao');
-        //     setResult(data.result);
-        // } catch (error) {
-        //     console.error('Fetch error:', error);
-        // }
         try {
-            const ask = "temporary prompt"
+            const ask = result;
             const response = await fetch('/api/openai', {
                 method: 'POST',
                 headers: {
@@ -36,7 +30,15 @@ const ExampleComponent = () => {
 
     return (
         <div>
-            <button onClick={handleFetch}>Call OpenAI API</button>
+            <input
+                type="text"
+                className="border border-gray-300 rounded py-2 px-4 mb-4"
+                placeholder="Enter your prompt"
+                onChange={(e) => setResult(e.target.value)}
+            />
+            <button onClick={handleFetch} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+                Call OpenAI API
+            </button>
             {result && <p>Response: {result}</p>}
         </div>
     );

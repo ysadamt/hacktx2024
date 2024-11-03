@@ -14,10 +14,6 @@ const authString = Buffer.from(`${client_id}:${client_secret}`).toString(
   "base64"
 );
 
-// console.log(process.env);
-// console.log('Client ID:', client_id);
-// console.log('Client Secret:', client_secret);
-
 // access token function
 const getToken = async () => {
   const response = await fetch("https://accounts.spotify.com/api/token", {
