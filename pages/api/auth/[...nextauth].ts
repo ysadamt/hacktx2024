@@ -67,8 +67,8 @@ export const authOptions: AuthOptions = {
       },
     }),
     AppleProvider({
-      clientId: process.env.APPLE_ID as string,
-      clientSecret: process.env.APPLE_SECRET as string,
+      clientId: process.env.APPLE_CLIENT_ID as string,
+      clientSecret: process.env.APPLE_CLIENT_SECRET as string,
       authorization: {
         params: {
           scope: "name email musickit",
