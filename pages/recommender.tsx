@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 // import { fetchOpenAI } from './api/openai'; // Adjust the import path as needed
 
 const ExampleComponent = () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [result, setResult] = useState('');
 
     const handleFetch = async () => {
@@ -21,11 +22,11 @@ const ExampleComponent = () => {
                 },
                 body: JSON.stringify({ ask }),
             });
-    
+
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-    
+
             const data = await response.json();
             console.log('Response from OpenAI:', data);
         } catch (error) {
