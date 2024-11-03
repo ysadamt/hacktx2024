@@ -1,15 +1,13 @@
 // pages/api/openai.js
 import OpenAI from 'openai';
 
-// Initialize OpenAI client
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-// API route to handle requests
 export default async function handler(req, res) { 
     if (req.method === 'POST') {
-        console.log('running');
+        //console.log('running');
         const completion = await openai.chat.completions.create({
             model: "gpt-4o-mini", // model
             messages: [{ role: "user", content: // prompt + user input
@@ -21,9 +19,9 @@ export default async function handler(req, res) {
         const result = tuples.map(pair => { const [song, artist] = pair.replace(/[()"]/g, '').split(',');
           return [song.trim(), artist.trim()];
         });
-        console.log(result);
-        return result;
+        //console.log(result);
+        return result; // returns arr of tuples where tuple[0] = song, tuple[1] = artist
     } else {
-        res.status(405).end(); // Method Not Allowed
+        res.status(405).end(); // error handling
     }
 }
