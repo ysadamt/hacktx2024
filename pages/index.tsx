@@ -2,6 +2,23 @@ import { useSession, signIn, signOut } from 'next-auth/react';
 import { useEffect, useState } from 'react';
 import type { SpotifyPlaylist } from '../types/spotify';
 import { getMusicUserToken } from '@/utils/appleMusicAuth';
+import Image from 'next/image';
+import logo from "@/public/assets/logo.png";
+import playIcon from "@/public/assets/play-icon.svg";
+import topLeft from "@/public/assets/top-left.svg";
+import bottomRight from "@/public/assets/bottom-right.svg";
+import gridBg from "@/public/assets/grid-bg.png";
+import sparkle from "@/public/assets/sparkle.svg";
+import randoDots from "@/public/assets/rando-dots.svg";
+import lines from "@/public/assets/lines.svg";
+import jpWords from "@/public/assets/jp-words.svg";
+import { VT323 } from 'next/font/google';
+import ForegroundStatic from '@/components/ForegroundStatic';
+
+const vt323 = VT323({
+  weight: '400',
+  subsets: ['latin'],
+});
 
 export default function Home() {
   const { data: session, status } = useSession();
@@ -71,13 +88,30 @@ export default function Home() {
 
   if (!session) {
     return (
-      <div className="p-4">
-        <button
-          onClick={() => signIn()}
-          className="bg-black text-white px-4 py-2 rounded"
-        >
-          Sign in
-        </button>
+      <div className={`${vt323.className} p-4 flex flex-col items-center justify-center min-h-dvh gap-8 text-white relative`}>
+        <Image src={gridBg} alt="Grid" className="absolute bottom-0 left-0 w-full" />
+        <div className="absolute bg-random-dots bg-repeat top-0 right-0 w-full h-full" />
+        <Image src={sparkle} alt="Sparkle" className="absolute top-[5%] left-[5%] w-[6%] sm:w-[3%]" />
+        <Image src={sparkle} alt="Sparkle" className="absolute bottom-[5%] right-[5%] w-[6%] sm:w-[3%]" />
+        <Image src={lines} alt="Lines" className="absolute top-[6%] right-[5%] w-[15%] sm:w-[10%]" />
+        <Image src={jpWords} alt="JP Words" className="absolute top-[12%] sm:top-[18%] right-[5%] w-[16%] sm:w-[7%]" />
+        <div className="relative w-[95%] sm:w-[60%]">
+          <Image src={logo} alt="Bridge" className="w-full" />
+          <Image src={topLeft} alt="top left" className="absolute top-0 left-0 w-[14%]" />
+          <Image src={bottomRight} alt="bottom right" className="absolute bottom-0 right-0 w-[14%]" />
+        </div>
+        <div className="flex gap-4 z-[9999]">
+          <Image src={playIcon
+          } alt="Play" className="w-8" />
+          <button
+            onClick={() => signIn()}
+            className="text-2xl px-6 py-2 border-2 border-white hover:bg-white hover:text-black"
+          >
+            Sign in
+          </button>
+        </div>
+        <p className="absolute bottom-8 text-lg">© 2024 DEVLOG Design, inc. ALL RIGHTS RESERVED</p>
+        <ForegroundStatic />
       </div>
     );
   }

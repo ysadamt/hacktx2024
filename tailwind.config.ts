@@ -12,6 +12,9 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      backgroundImage: {
+        "random-dots": "url('/assets/rando-dots.svg')",
+      },
     },
   },
   plugins: [],
