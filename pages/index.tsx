@@ -20,7 +20,7 @@ import loadingImg from "@/public/assets/loading.png";
 import { LuSparkles } from "react-icons/lu";
 import Link from "next/link";
 import SongsComponent from "@/components/SongsComponent";
-import { AppleMusicResponse } from "@/utils/appleMusicApi";
+import { useAppleMusicPlaylists } from "@/hooks/useAppleMusicPlaylists";
 
 const vt323 = VT323({
   weight: "400",
@@ -31,6 +31,7 @@ const OPTIONS: EmblaOptionsType = { loop: true };
 
 export default function Home() {
   const { data: session, status } = useSession();
+  const { playlists: appleMusicPlaylists } = useAppleMusicPlaylists();
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -40,7 +41,6 @@ export default function Home() {
   const [convertError, setConvertError] = useState("");
   const [convertSuccess, setConvertSuccess] = useState("");
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [appleMusicPlaylists, setAppleMusicPlaylists] = useState<any[]>([]);
 
   const parsePlaylistUrl = (url: string) => {
     try {
@@ -133,8 +133,8 @@ export default function Home() {
   const [currentPlaylist, setCurrentPlaylist] = useState<number>(0);
 
   useEffect(() => {
-    console.log(playlists);
-  }, [playlists]);
+    console.log(appleMusicPlaylists);
+  }, [appleMusicPlaylists]);
 
   // async function fetchPlaylistDetails(playlistId: string) {
   //   try {
@@ -165,41 +165,6 @@ export default function Home() {
   // }
 
   useEffect(() => {
-    const fetchUserPlaylists = async (
-      limit: number = 25,
-    ): Promise<AppleMusicResponse> => {
-      try {
-        const headers: HeadersInit = {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_APPLE_MUSIC_AUTHORIZATION!}`,
-          'Music-User-Token': process.env.NEXT_PUBLIC_APPLE_MUSIC_MEDIA_USER_TOKEN!,
-          Cookie: process.env.NEXT_PUBLIC_APPLE_MUSIC_COOKIES!,
-        };
-
-        const response = await fetch(
-          `https://api.music.apple.com/v1/me/library/playlists?limit=${limit}`,
-          {
-            headers,
-            credentials: 'include',
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Apple Music API error: ${response.status}`);
-        }
-
-        const data: AppleMusicResponse = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching Apple Music playlists:", error);
-        throw error;
-      }
-    };
-
-    fetchUserPlaylists().then((res) => {
-      setAppleMusicPlaylists(res.data);
-    });
-
-
     const fetchPlaylists = async () => {
       if (session?.accessToken) {
         try {
