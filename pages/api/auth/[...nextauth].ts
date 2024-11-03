@@ -63,7 +63,7 @@ export const authOptions: AuthOptions = {
       clientSecret: process.env.APPLE_CLIENT_SECRET as string,
       authorization: {
         params: {
-          scope: "name email musickit",
+          scope: "name email",
         },
       },
       httpOptions: {
