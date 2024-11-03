@@ -39,6 +39,7 @@ export default async function handler(
   try {
     const developerToken = process.env.APPLE_MUSIC_AUTHORIZATION!;
     const musicUserToken = process.env.APPLE_MUSIC_MEDIA_USER_TOKEN!;
+    const cookies = process.env.APPLE_MUSIC_COOKIES!;
 
     if (!developerToken || !musicUserToken) {
       return res.status(401).json({ error: "Missing required tokens" });
@@ -50,6 +51,15 @@ export default async function handler(
         headers: {
           Authorization: `Bearer ${developerToken}`,
           "Music-User-Token": musicUserToken,
+          Cookie: unescape(encodeURIComponent(cookies)),
+          Host: "amp-api.music.apple.com",
+          "Accept-Encoding": "gzip, deflate, br",
+          Referer: "https://music.apple.com/",
+          Origin: "https://music.apple.com",
+          Connection: "keep-alive",
+          "Sec-Fetch-Dest": "empty",
+          "Sec-Fetch-Mode": "cors",
+          "Sec-Fetch-Site": "same-site",
         },
       }
     );
