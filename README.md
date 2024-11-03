@@ -1,4 +1,4 @@
-### Bridge: A Spotify-to-Apple Music port
+# Bridge: A Spotify-to-Apple Music port
 
 
 ## Inspiration
