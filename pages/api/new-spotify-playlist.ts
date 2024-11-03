@@ -17,7 +17,7 @@ export default async function handler(
 
     const { name, description, tracks } = req.body;
 
-    // 1. Create empty playlist
+    // making empty playlist
     const createPlaylistResponse = await fetch(
       `https://api.spotify.com/v1/me/playlists`,
       {
@@ -40,7 +40,7 @@ export default async function handler(
 
     const playlist = await createPlaylistResponse.json();
 
-    // 2. Search for tracks by ISRC and get Spotify IDs
+    // searching for tracks by ISRCs
     const spotifyTrackIds = [];
     for (const track of tracks) {
       if (track.isrc) {
@@ -62,7 +62,7 @@ export default async function handler(
       }
     }
 
-    // 3. Add tracks to playlist
+    // add to playlist
     if (spotifyTrackIds.length > 0) {
       const addTracksResponse = await fetch(
         `https://api.spotify.com/v1/playlists/${playlist.id}/tracks`,

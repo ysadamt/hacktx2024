@@ -4,7 +4,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 interface CreatePlaylistRequest {
   name: string;
   description?: string;
-  tracksISRCs?: string[]; // Array of track ISRCs
+  tracksISRCs?: string[]; 
 }
 
 interface AppleMusicResponse {
