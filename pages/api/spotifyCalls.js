@@ -37,6 +37,7 @@ const getToken = async () => {
   }
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getUserID = async (accessToken) => {
   const response = await fetch(`https://api.spotify.com/v1/me`, {
     method: "GET",

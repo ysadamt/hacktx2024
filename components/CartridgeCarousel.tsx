@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef } from 'react'
 import {
   EmblaCarouselType,
   EmblaEventType,
@@ -27,14 +27,15 @@ const numberWithinRange = (number: number, min: number, max: number): number =>
 type PropType = {
   slides: SpotifyPlaylist[]
   options?: EmblaOptionsType
+  currentPlaylist: number
+  setCurrentPlaylist: React.Dispatch<React.SetStateAction<number>>
 }
 
 const CartridgeCarousel: React.FC<PropType> = (props) => {
-  const { slides, options } = props
+  const { slides, options, currentPlaylist, setCurrentPlaylist } = props
   const [emblaRef, emblaApi] = useEmblaCarousel(options)
   const tweenFactor = useRef(0)
   const tweenNodes = useRef<HTMLElement[]>([])
-  const [currentPlaylist, setCurrentPlaylist] = useState<number>(0);
 
   const {
     prevBtnDisabled,

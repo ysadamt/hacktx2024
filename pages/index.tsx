@@ -19,6 +19,7 @@ import { EmblaOptionsType } from 'embla-carousel'
 import loadingImg from "@/public/assets/loading.png";
 import { LuSparkles } from "react-icons/lu";
 import Link from 'next/link';
+import SongsComponent from '@/components/SongsComponent';
 
 const vt323 = VT323({
   weight: '400',
@@ -32,6 +33,11 @@ export default function Home() {
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentPlaylist, setCurrentPlaylist] = useState<number>(0);
+
+  useEffect(() => {
+    console.log(playlists);
+  }, [playlists]);
 
   // async function fetchPlaylistDetails(playlistId: string) {
   //   try {
@@ -142,8 +148,15 @@ export default function Home() {
       <div className="mt-8 flex justify-center items-center">
         {loading && <Image src={loadingImg} alt="Loading" />}
         {error && <div className="text-red-500">Error: {error}</div>}
-        {playlists.length !== 0 && <CartridgeCarousel slides={playlists} options={OPTIONS} />}
+        {playlists.length !== 0 && <CartridgeCarousel currentPlaylist={currentPlaylist} setCurrentPlaylist={setCurrentPlaylist} slides={playlists} options={OPTIONS} />}
       </div>
+
+      {playlists.length !== 0 && (
+        <div className="flex flex-col w-full items-center pt-16 gap-4">
+          <h3 className="text-5xl w-3/4 text-center">Tracks</h3>
+          <SongsComponent playlistHref={playlists[currentPlaylist].href} />
+        </div>
+      )}
 
       {/* <div className="grid grid-cols-1 gap-4 w-1/4">
         {playlists.map((playlist) => (
