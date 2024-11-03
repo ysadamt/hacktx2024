@@ -37,6 +37,7 @@ const getToken = async () => {
   }
 };
 
+// gets userID
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getUserID = async (accessToken) => {
   const response = await fetch(`https://api.spotify.com/v1/me`, {
@@ -52,15 +53,13 @@ const getUserID = async (accessToken) => {
   } else {
     const errorData = await response.json();
     console.error(
-      "Failed to fetch user ID:",
-      response.status,
-      response.statusText,
-      errorData
+      "Failed to fetch user ID:", response.status, response.statusText, errorData
     );
   }
 };
-// https://api.spotify.com/v1/search?q=remaster%2520track%3ABlackCatcher%2520artist%3AVK%2520Blanka&type=track
-const getSongIRCS = async (accessToken, songName, artistName) => {
+
+// gets ISRC of a song
+const getSongISRC = async (accessToken, songName, artistName) => {
   const formattedArtistName = artistName.split(' ').join('%2520');
   const response = await fetch(`https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track&limit=1`, {
     method: "GET",
@@ -68,43 +67,89 @@ const getSongIRCS = async (accessToken, songName, artistName) => {
       Authorization: `Bearer ${accessToken}`,
     },
   });
-  // console.log(`https://api.spotify.com/v1/search?q=remaster%2520track%3A${songName}%2520artist%3A${formattedArtistName}&type=track`);
-  // console.log(response);
 
   if (response.ok) {
     const data = await response.json();
-    // console.log(data.tracks.items[0].external_ids.isrc);
     return data.tracks.items[0].external_ids.isrc; // returns isrc
   } else {
     const errorData = await response.json();
     console.error(
-      "Failed to fetch song IRSC :",
-      response.status,
-      response.statusText,
-      errorData
+      "Failed to fetch song IRSC :", response.status, response.statusText, errorData
     );
   }
-}
+};
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const getPlaylists = async (accessToken) => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const response = await fetch(`https://api.spotify.com/v1/playlists`, {
+// gets playlist using playlistID
+const getPlaylist = async (accessToken, playlistID) => {
+  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}`, {
+    method: "GET",
     headers: {
       Authorization: `Bearer ${accessToken}`,
     },
   });
+
+  if (response.ok) {
+    const data = await response.json();
+    return data.id;
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to fetch user ID:", response.status, response.statusText, errorData
+    );
+  }
 };
+
+// creates playlist
+const createPlaylist = async (accessToken, userID, playlistName, tracksIds) => {
+  const response = await fetch(`https://api.spotify.com/v1/users/${userID}/playlists&name=${playlistName}`,{ // not to sure ab playlist name
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+    }
+  )
+  
+  if (response.ok) {
+    const data = await response.json();
+    addTracksToPlaylist(accessToken, data.id, tracksIds);
+    return data.id;
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to create playlist:", response.status, response.statusText, errorData
+    );
+  }
+};
+
+// adds tracks to playlist, create playlist helper function
+const addTracksToPlaylist = async (accessToken, playlistID, tracksIds) => {
+  const response = await fetch(`https://api.spotify.com/v1/playlists/${playlistID}/tracks?uris=${tracksIds.join(",")}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  if (response.ok) {
+    console.log("Tracks added to playlist successfully");
+  } else {
+    const errorData = await response.json();
+    console.error(
+      "Failed to add tracks to playlist:", response.status, response.statusText, errorData
+    );
+  }
+};
+
 
 // makes song recommendations based on given tracks
 const numRecommendations = 10;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const getRecommendations = async (accessToken, tracksIds) => {
   const response = await fetch(
-    `https://api.spotify.com/v1/recommendations?limit=${numRecommendations}&seed_tracks=${tracksIds.join(
-      ","
-    )}`,
+    `https://api.spotify.com/v1/recommendations?limit=${numRecommendations}&seed_tracks=${tracksIds.join(",")}`,
     {
+      method: "GET",
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
@@ -113,14 +158,7 @@ const getRecommendations = async (accessToken, tracksIds) => {
   if (response.ok) {
     const data = await response.json();
     // console.log('Recommended tracks: ', data.tracks);
-    console.log(
-      data.tracks.map(
-        (track) =>
-          `${track.name} by ${track.artists
-            .map((artist) => artist.name)
-            .join(", ")}`
-      )
-    );
+    console.log(data.tracks.map((track) => `${track.name} by ${track.artists.map((artist) => artist.name).join(", ")}`));
   }
 };
 
@@ -129,7 +167,7 @@ getToken()
   .then((accessToken) => {
     if (accessToken) {
       // returns isrc
-      getSongIRCS(accessToken, 'Faith', 'STXRZ').then((isrc) => {
+      getSongISRC(accessToken, 'Faith', 'STXRZ').then((isrc) => {
         console.log(isrc);
       });
       
