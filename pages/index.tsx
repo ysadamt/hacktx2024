@@ -1,7 +1,7 @@
 import { useSession, signIn, signOut } from "next-auth/react";
 import { useEffect, useState } from "react";
 import type { SpotifyPlaylist } from "../types/spotify";
-import { getMusicUserToken } from "@/utils/appleMusicAuth";
+// import { getMusicUserToken } from '@/utils/appleMusicAuth';
 import Image from "next/image";
 import logo from "@/public/assets/logo.png";
 import playIcon from "@/public/assets/play-icon.svg";
@@ -11,85 +11,55 @@ import gridBg from "@/public/assets/grid-bg.png";
 import sparkle from "@/public/assets/sparkle.svg";
 import lines from "@/public/assets/lines.svg";
 import jpWords from "@/public/assets/jp-words.svg";
+import header from "@/public/assets/header.png";
 import { VT323 } from "next/font/google";
 import ForegroundStatic from "@/components/ForegroundStatic";
+import CartridgeCarousel from "@/components/CartridgeCarousel";
+import { EmblaOptionsType } from "embla-carousel";
+import loadingImg from "@/public/assets/loading.png";
+import { LuSparkles } from "react-icons/lu";
+import Link from "next/link";
 
 const vt323 = VT323({
   weight: "400",
   subsets: ["latin"],
 });
 
+const OPTIONS: EmblaOptionsType = { loop: true };
+
 export default function Home() {
   const { data: session, status } = useSession();
   const [playlists, setPlaylists] = useState<SpotifyPlaylist[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [convertingPlaylistId, setConvertingPlaylistId] = useState<
-    string | null
-  >(null);
-  const [conversionSuccess, setConversionSuccess] = useState<string | null>(
-    null
-  );
 
-  async function fetchPlaylistDetails(playlist: SpotifyPlaylist) {
-    try {
-      setConvertingPlaylistId(playlist.id);
-      setError(null);
-      setConversionSuccess(null);
+  // async function fetchPlaylistDetails(playlistId: string) {
+  //   try {
+  //     const response = await fetch(`/api/spotify-playlist-songs?playlistId=${playlistId}`);
+  //     if (!response.ok) {
+  //       throw new Error('Failed to fetch playlist details');
+  //     }
 
-      // 1. Get tracks from Spotify playlist
-      const response = await fetch(
-        `/api/spotify-playlist-songs?playlistId=${playlist.id}`
-      );
-      if (!response.ok) {
-        throw new Error("Failed to fetch playlist details");
-      }
-      const { tracks: trackISRCs } = await response.json();
+  //     const trackISRCs = await response.json();
+  //     console.log(trackISRCs);
 
-      // 2. Get Apple Music authentication
-      const devToken = process.env.NEXT_PUBLIC_APPLE_MUSIC_DEV_TOKEN;
-      if (!devToken) {
-        throw new Error("Apple Music developer token not configured");
-      }
+  //     const userToken = await getMusicUserToken(session!.accessToken!);
+  //     console.log(userToken);
 
-      const musicUserToken = await getMusicUserToken(devToken);
-      if (!musicUserToken) {
-        throw new Error(
-          "Failed to get Apple Music authorization. Please make sure you're signed in to Apple Music."
-        );
-      }
-
-      // 3. Create Apple Music playlist
-      const createPlaylistResponse = await fetch("/api/new-apple-playlist", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Music-User-Token": musicUserToken,
-        },
-        body: JSON.stringify({
-          name: `${playlist.name} (from Spotify)`,
-          description: playlist.description || "Playlist imported from Spotify",
-          tracksISRCs: trackISRCs.filter(Boolean),
-        }),
-      });
-
-      if (!createPlaylistResponse.ok) {
-        throw new Error("Failed to create Apple Music playlist");
-      }
-
-      const result = await createPlaylistResponse.json();
-      setConversionSuccess(
-        `Successfully created "${playlist.name}" in Apple Music!`
-      );
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "An unknown error occurred"
-      );
-      console.error(err);
-    } finally {
-      setConvertingPlaylistId(null);
-    }
-  }
+  //     const response3 = await fetch(`/api/new-apple-playlist`,
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           Authorization: `Bearer ${session!.accessToken}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(trackISRCs),
+  //       }
+  //     );
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // }
 
   useEffect(() => {
     const fetchPlaylists = async () => {
@@ -188,21 +158,32 @@ export default function Home() {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <span>Signed in as {session.user?.name}</span>
-        <button
-          onClick={() => signOut()}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Sign out
-        </button>
+    <div
+      className={`${vt323.className} p-4 flex flex-col items-center justify-center min-h-dvh text-white relative`}
+    >
+      <div className="bg-[#242135] w-full flex justify-center p-4">
+        <Image src={header} alt="Header" />
+      </div>
+      <div className="w-full">
+        <div className="flex items-center justify-between px-8 pb-4 bg-[#242135]">
+          <p className="text-2xl">Welcome back, {session.user?.name}!</p>
+          <button
+            onClick={() => signOut()}
+            className="border-white text-white px-4 py-2 border-2 hover:bg-white hover:text-black text-lg"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+      <div className="mt-8 flex justify-center items-center">
+        {loading && <Image src={loadingImg} alt="Loading" />}
+        {error && <div className="text-red-500">Error: {error}</div>}
+        {playlists.length !== 0 && (
+          <CartridgeCarousel slides={playlists} options={OPTIONS} />
+        )}
       </div>
 
-      {loading && <div>Loading playlists...</div>}
-      {error && <div className="text-red-500">Error: {error}</div>}
-
-      <div className="grid grid-cols-1 gap-4 w-1/4">
+      {/* <div className="grid grid-cols-1 gap-4 w-1/4">
         {playlists.map((playlist) => (
           <div
             key={playlist.id}
@@ -222,7 +203,32 @@ export default function Home() {
             </p>
           </div>
         ))}
+      </div> */}
+      <div className="flex gap-4">
+        <button className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black">
+          <svg
+            width="37"
+            height="40"
+            viewBox="0 0 37 40"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M12.5 7.29419H30.5V32.706H18.5V20.0001H27.5V13.6471H15.5V32.706H3.5V20.0001H12.5V7.29419ZM12.5 23.1765H6.5V29.5295H12.5V23.1765ZM27.5 23.1765H21.5V29.5295H27.5V23.1765Z"
+              fill="currentColor"
+            />
+          </svg>
+          Convert
+        </button>
+        <Link
+          href="/recommender"
+          className="px-6 py-2 border-2 border-[#EE98FF] flex items-center justify-center gap-4 text-4xl text-[#EE98FF] my-16 hover:bg-[#EE98FF] hover:text-black"
+        >
+          <LuSparkles size={30} />
+          Recommender
+        </Link>
       </div>
+      <ForegroundStatic />
     </div>
   );
 }
