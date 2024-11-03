@@ -1,7 +1,10 @@
 // ExampleComponent.js - Your client-side component
+import ForegroundStatic from '@/components/ForegroundStatic';
 import { useSession } from 'next-auth/react';
 import { VT323 } from 'next/font/google';
 import React, { useState } from 'react';
+import Image from 'next/image';
+import gridBg from '@/public/assets/grid-bg.png';
 // import { fetchOpenAI } from './api/openai'; // Adjust the import path as needed
 
 const vt323 = VT323({
@@ -60,18 +63,18 @@ const ExampleComponent = () => {
     };
 
     return (
-        <div className={`${vt323.className} flex flex-col w-full justify-center min-h-dvh items-center p-4 gap-6`}>
+        <div className={`${vt323.className} flex flex-col w-full justify-start min-h-dvh items-center px-4 pb-4 pt-32 gap-6 relative`}>
             <h1 className="text-6xl text-white">Recommender</h1>
             <input
                 type="text"
-                className="border-2 bg-transparent text-white py-2 px-4 mb-4 text-2xl w-1/3"
+                className="border-2 bg-transparent text-white py-2 px-4 mb-4 text-2xl w-1/3 z-[9999]"
                 placeholder="Enter your prompt"
                 onChange={(e) => setResult(e.target.value)}
             />
-            <button onClick={handleFetch} className="border-[#EE98FF] text-[#EE98FF] text-xl font-bold py-2 px-4 border-2 hover:text-black hover:bg-[#EE98FF]">
+            <button onClick={handleFetch} className="border-[#EE98FF] text-[#EE98FF] text-xl font-bold py-2 px-4 border-2 hover:text-black hover:bg-[#EE98FF] z-[9999]">
                 Find me some songs!
             </button>
-            <div className="mt-4 mb-8">
+            <div className="mt-4 mb-8 z-[9999]">
                 {applePlaylistLink && (
                     <a
                         href={`https://music.apple.com/us/library/playlist/${applePlaylistLink.split("/playlists/")[1]}`}
@@ -83,6 +86,12 @@ const ExampleComponent = () => {
                     </a>
                 )}
             </div>
+            <Image
+                src={gridBg}
+                alt="Grid"
+                className="absolute bottom-0 left-0 w-full"
+            />
+            <ForegroundStatic />
         </div >
     );
 };
