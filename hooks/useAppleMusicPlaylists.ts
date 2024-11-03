@@ -1,5 +1,5 @@
-import { AppleMusicPlaylist } from '@/utils/appleMusicApi';
-import { useState, useEffect } from 'react';
+import { AppleMusicPlaylist } from "@/utils/appleMusicApi";
+import { useState, useEffect } from "react";
 
 export const useAppleMusicPlaylists = () => {
   const [playlists, setPlaylists] = useState<AppleMusicPlaylist[]>([]);
@@ -9,14 +9,14 @@ export const useAppleMusicPlaylists = () => {
   useEffect(() => {
     const fetchPlaylists = async () => {
       try {
-        const response = await fetch('/api/playlists');
+        const response = await fetch("/api/get-playlists");
         if (!response.ok) {
-          throw new Error('Failed to fetch playlists');
+          throw new Error("Failed to fetch playlists");
         }
         const data = await response.json();
         setPlaylists(data.data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
