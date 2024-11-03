@@ -20,6 +20,7 @@ import loadingImg from "@/public/assets/loading.png";
 import { LuSparkles } from "react-icons/lu";
 import Link from "next/link";
 import SongsComponent from "@/components/SongsComponent";
+import { AppleMusicResponse } from "@/utils/appleMusicApi";
 
 const vt323 = VT323({
   weight: "400",
@@ -38,6 +39,8 @@ export default function Home() {
   const [convertLoading, setConvertLoading] = useState(false);
   const [convertError, setConvertError] = useState("");
   const [convertSuccess, setConvertSuccess] = useState("");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [appleMusicPlaylists, setAppleMusicPlaylists] = useState<any[]>([]);
 
   const parsePlaylistUrl = (url: string) => {
     try {
@@ -162,6 +165,41 @@ export default function Home() {
   // }
 
   useEffect(() => {
+    const fetchUserPlaylists = async (
+      limit: number = 25,
+    ): Promise<AppleMusicResponse> => {
+      try {
+        const headers: HeadersInit = {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_APPLE_MUSIC_AUTHORIZATION!}`,
+          'Music-User-Token': process.env.NEXT_PUBLIC_APPLE_MUSIC_MEDIA_USER_TOKEN!,
+          Cookie: process.env.NEXT_PUBLIC_APPLE_MUSIC_COOKIES!,
+        };
+
+        const response = await fetch(
+          `https://api.music.apple.com/v1/me/library/playlists?limit=${limit}`,
+          {
+            headers,
+            credentials: 'include',
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Apple Music API error: ${response.status}`);
+        }
+
+        const data: AppleMusicResponse = await response.json();
+        return data;
+      } catch (error) {
+        console.error("Error fetching Apple Music playlists:", error);
+        throw error;
+      }
+    };
+
+    fetchUserPlaylists().then((res) => {
+      setAppleMusicPlaylists(res.data);
+    });
+
+
     const fetchPlaylists = async () => {
       if (session?.accessToken) {
         try {
@@ -191,6 +229,10 @@ export default function Home() {
 
     fetchPlaylists();
   }, [session]);
+
+  useEffect(() => {
+    console.log(appleMusicPlaylists);
+  }, [appleMusicPlaylists]);
 
   if (status === "loading") {
     return <div>Loading authentication status...</div>;
@@ -286,6 +328,10 @@ export default function Home() {
             options={OPTIONS}
           />
         )}
+      </div>
+
+      <div>
+
       </div>
 
       {playlists.length !== 0 && (
