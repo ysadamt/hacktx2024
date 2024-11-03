@@ -91,7 +91,7 @@ const SigninPage: NextPage = () => {
             <button
               disabled={getDisabledState("spotify")}
               onClick={handleSignIn("spotify")}
-              className="flex items-center justify-center gap-4 border-2 border-white py-2 px-6 hover:bg-white hover:text-black"
+              className="flex items-center justify-center gap-3 border-2 border-white py-2 px-6 hover:bg-white hover:text-black"
             >
               <SiSpotify size={20} color="#1DB954" />
               Sign in with Spotify
@@ -100,7 +100,7 @@ const SigninPage: NextPage = () => {
             <button
               disabled={getDisabledState("apple")}
               onClick={handleSignIn("apple")}
-              className="flex items-center justify-center gap-4 border-2 border-white py-2 px-6 hover:bg-white hover:text-black"
+              className="flex items-center justify-center gap-3 border-2 border-white py-2 px-6 hover:bg-white hover:text-black"
             >
               <SiApplemusic size={19} color="#FA2D48" />
               Sign in with Apple Music

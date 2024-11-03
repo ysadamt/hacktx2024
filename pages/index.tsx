@@ -11,6 +11,7 @@ import gridBg from "@/public/assets/grid-bg.png";
 import sparkle from "@/public/assets/sparkle.svg";
 import lines from "@/public/assets/lines.svg";
 import jpWords from "@/public/assets/jp-words.svg";
+import header from "@/public/assets/header.png";
 import { VT323 } from 'next/font/google';
 import ForegroundStatic from '@/components/ForegroundStatic';
 
@@ -116,15 +117,20 @@ export default function Home() {
   }
 
   return (
-    <div className="p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <span>Signed in as {session.user?.name}</span>
-        <button
-          onClick={() => signOut()}
-          className="bg-red-500 text-white px-4 py-2 rounded"
-        >
-          Sign out
-        </button>
+    <div className={`${vt323.className} p-4 flex flex-col items-center justify-center min-h-dvh text-white relative`}>
+      <div className="bg-[#242135] w-fit p-4">
+        <Image src={header} alt="Header" />
+      </div>
+      <div className="w-full">
+        <div className="flex items-center justify-between px-8 pb-4 mx-3 bg-[#242135]">
+          <p className="text-2xl">Welcome back, {session.user?.name}!</p>
+          <button
+            onClick={() => signOut()}
+            className="border-white text-white px-4 py-2 border-2 hover:bg-white hover:text-black text-lg"
+          >
+            Sign out
+          </button>
+        </div>
       </div>
 
       {loading && <div>Loading playlists...</div>}
@@ -151,6 +157,7 @@ export default function Home() {
           </div>
         ))}
       </div>
+      <ForegroundStatic />
     </div>
   );
 }
